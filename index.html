@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-126565767-3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-126565767-3');
+    </script>
+
+    <meta charset="utf-8">
+    <meta name="viewport" width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0>
+    <meta content="quadrat, grid, frame, ecology, plant community, counting species, labeling, field, cover, abundance" name="keywords">
+    <meta content="An interactive quadrat for environmental research" name="description">
+    <title>Quadrat</title>
+    <link rel="stylesheet" href="public/css/quadrat.css">
+    <link rel="stylesheet" href="public/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <script src="p5/p5.min.js"></script>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <!-- Banner -->
+      <div>
+        <h1 class="title" style="margin-bottom: 0px;">Quadrat</h1>
+        <h6 class="subtitle col m9" style="margin-top: 0px;">An interactive frame for environmental research</h6>
+      </div>
+
+      <!-- Main tool area -->
+      <div class="row" style="margin-top: 40px;">
+
+        <!-- Left control panel -->
+        <div class="col s3">
+
+          <label class="btn-flat col s12 m12 white" id="uploadImageBtn" style="margin-bottom: 10px; padding:0px; color: black; font-weight:bolder;"><span class="bullet">1.</span>Load Image</label>
+          <label class="btn-flat col s12 m12 white modal-trigger" id="createGridBtn" href="#modal-create-grid" style="margin-bottom:10px;padding:0px; color: black; font-weight:bolder;"><span class="bullet">2.</span>Generate Grid</label>
+          <label class="btn-flat col s12 m12 white modal-trigger" id="createLabelBtn" href="#modal-create-label" style="margin-bottom:10px;padding:0px; color: black; font-weight:bolder;"><span class="bullet">3.</span>Add Label</label>
+
+          <!-- Mode selection -->
+          <div style=" margin-top: 80px !important">
+            <label style="padding-right: 25px;">
+              <input class="with-gap radio-blue-grey" name="modeControls" id="highlightGrid" value="highlightGrid" type="radio" checked />
+              <span style="padding-left: 25px;">Highlight</span>
+            </label>
+            <label>
+              <input class="with-gap" name="modeControls" id="eraseGrid"  value="eraseGrid" type="radio" />
+              <span style="padding-left: 25px;">Erase</span>
+            </label>
+          </div>
+
+
+          <!-- User defined labels-->
+          <table class="col s12 m12 l12" id="table-labels" style="display: none; margin-top: 50px;">
+            <colgroup>
+              <col span="1" style="width: 5%;">
+              <col span="1" style="width: 40%;">
+              <col span="1" style="width: 40%;">
+              <col span="1" style="width: 15%;">
+            </colgroup>
+
+            <thead width='100%'>
+              <tr>
+                  <th class="left-align"></th>
+                  <th class="left-align">Label</th>
+                  <th class="center-align">Cover <span class="hide-on-small-only">%</span></th>
+                  <th></th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+
+        </div>
+
+        <!-- Right image panel -->
+        <div class="col s9">
+          <div id="canvas" oncontextmenu="return false;"></div>
+
+          <div class="col m12 right-align" id="downloadControls" style="margin-top: 10px; display: none;">
+            <a class="btn col s12 m2 offset-m6 white" id="downloadImageBtn" style="margin-bottom: 10px; padding:0px; color: black; font-weight:bolder;">Canvas</a>
+            <a class="btn col s12 m2 white" id="downloadTableBtn" style="margin-bottom: 10px; padding:0px; color: black; font-weight:bolder;">Table</a>
+            <a class="btn col s12 m2 white" id="downloadJSONBtn" style="margin-bottom: 10px; padding:0px; color: black; font-weight:bolder;">JSON</a>  
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr style="width: 75%; margin-top: 50px;">
+    <footer style="margin-bottom: 10px;">
+      <div class="footer-copyright">
+        <div class="container">
+        © 2020 Copyright Andres Patrignani
+        <a class="right" style="color: #651fff" href="https://github.com/andres-patrignani/quadrat" target="_blank">Github</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Modal Grid -->
+    <div id="modal-create-grid" class="modal col s6 m6">
+      <div class="modal-content container">
+
+        <h4>Create new grid</h4>
+        <table id="table-create-grid">
+          <colgroup>
+            <col span="1" style="width: 50%;">
+            <col span="1" style="width: 50%;">
+          </colgroup>
+          <tr>
+            <td style="padding-right: 15px !important;">
+              <label>Rows</label>
+              <input value="10" id="gridRows" type="number" min="3" max="25" onkeydown="return false">
+            </td>
+            <td style="padding-left: 15px !important;">
+              <label>Columns</label>
+              <input value="10" id="gridColumns" type="number" min="3" max="25" onkeydown="return false">
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <label>Quadrat description</label>
+              <input id="quadratDescription" type="text">
+            </td>
+          </tr>
+        </table>
+      
+      </div>
+      <div class="modal-footer">
+        <a class="modal-close btn green darken-6 col s6" id="addGridBtn">Create grid</a>
+      </div>
+    </div>
+
+      <!-- Modal Labels -->
+      <div id="modal-create-label" class="modal col s6 m6">
+        <div class="modal-content container">
+
+          <h4>Create new label</h4>
+
+          <table id="table-create-label">
+            <colgroup>
+              <col span="1" style="width: 80%;">
+              <col span="1" style="width: 20%;">
+           </colgroup>
+            <tr>
+              <td style="padding-right: 10px;">
+                <label>Label name</label>
+                <input placeholder="Dandelions" id="labelName" type="text" maxlength="12" required>
+              </td>
+              <td>
+                <label>Label color</label>
+                <input type="color" value="#ff3d00" id="labelColor" style="width: 100%; height: 50px">
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <label>Label description</label>
+                <input id="labelDescription" type="text">
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <a class="modal-close btn green darken-6 col s6" id="addLabelBtn">Add label</a>
+        </div>
+      </div>
+     
+
+  <script src="public/js/materialize.min.js"></script>
+  <script src="public/js/quadrat.js"></script>
+  <script>  
+
+    //Sidenav
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.sidenav');
+      var instances = M.Sidenav.init(elems, {'edge':'right'});
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('select');
+      var instances = M.FormSelect.init(elems);
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.modal');
+      var instances = M.Modal.init(elems);
+    });
+
+  </script>
+
+  </body>
+</html>
