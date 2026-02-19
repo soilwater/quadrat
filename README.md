@@ -5,15 +5,11 @@ It provides a digital alternative to traditional field quadrats for quantifying 
 
 The application runs entirely in the browser. No installation, sign-in, or server connection is required.
 
----
-
 ## Overview
 
 Quadrat is designed to simplify image-based cover estimation while maintaining transparency and reproducibility. Images collected in the field can be re-analyzed at any time, and labeled datasets (including grid configuration and label metadata) can be exported as part of project documentation.
 
 Quadrat does not replace field research. Images represent a static view of the system, and some organisms may be difficult to identify from photographs alone.
-
----
 
 ## Main Features
 
@@ -37,8 +33,6 @@ Quadrat does not replace field research. Images represent a static view of the s
 ### Session I/O
 - Export session data as JSON
 - Local-only processing (no data uploaded or shared)
-
----
 
 ## License
 
