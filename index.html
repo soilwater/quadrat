@@ -1,196 +1,885 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-126565767-3"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'UA-126565767-3');
-    </script>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Quadrat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <meta charset="utf-8">
-    <meta name="viewport" width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0>
-    <meta content="quadrat, grid, frame, ecology, plant community, counting species, labeling, field, cover, abundance" name="keywords">
-    <meta content="An interactive quadrat for environmental research" name="description">
-    <title>Quadrat</title>
-    <link rel="stylesheet" href="public/css/quadrat.css">
-    <link rel="stylesheet" href="public/css/materialize.min.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    :root {
+      --bg:           #F5F3EC;
+      --surface:      #FFFFFF;
+      --surface-alt:  #F0EDE5;
+      --border:       #DDD9CE;
+      --text:         #1A1916;
+      --muted:        #8A877E;
+      --accent:       #2C5F0E;
+      --accent-hover: #1E4509;
+      --accent-light: #EAF1E0;
+      --danger:       #B83C2B;
+      --radius:       4px;
+    }
 
-    <script src="p5/p5.min.js"></script>
-  </head>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-size: 14px;
+    }
 
-  <body>
+    /* ── Header ─────────────────────────────────────────── */
+    header {
+      padding: 28px 40px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: baseline;
+      gap: 20px;
+    }
 
-    <div class="container">
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 40px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
 
-      <!-- Banner -->
-      <div>
-        <h1 class="title" style="margin-bottom: 0px;">Quadrat</h1>
-        <h6 class="subtitle col m9" style="margin-top: 0px;">An interactive frame for environmental research</h6>
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── App Layout ──────────────────────────────────────── */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 248px 1fr;
+      flex: 1;
+    }
+
+    /* ── Sidebar ─────────────────────────────────────────── */
+    .sidebar {
+      border-right: 1px solid var(--border);
+      padding: 28px 20px;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .step-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: left;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      margin-bottom: 7px;
+    }
+
+    .step-btn:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .step-btn:hover .step-num {
+      background: var(--accent-hover);
+    }
+
+    .step-num {
+      width: 21px;
+      height: 21px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 18px 0;
+    }
+
+    .sidebar-label {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    /* Mode toggle */
+    .radio-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .radio-option { position: relative; }
+
+    .radio-option input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    .radio-option label {
+      display: block;
+      padding: 8px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.15s;
+      background: var(--surface);
+      color: var(--text);
+      user-select: none;
+    }
+
+    .radio-option input:checked + label {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .radio-option label:hover { border-color: var(--accent); }
+
+    /* Labels list */
+    .labels-empty {
+      font-size: 12px;
+      color: var(--muted);
+      font-style: italic;
+      padding: 8px 0;
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 9px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      cursor: pointer;
+      margin-bottom: 3px;
+      transition: all 0.15s;
+    }
+
+    .label-row:hover { background: var(--surface); border-color: var(--border); }
+    .label-row.active { background: var(--surface); border-color: var(--accent); }
+
+    .label-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1.5px solid rgba(0,0,0,0.1);
+    }
+
+    .label-name {
+      flex: 1;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .label-pct {
+      font-size: 11px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      min-width: 36px;
+      text-align: right;
+    }
+
+    .label-delete {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1;
+      padding: 0 2px;
+      opacity: 0;
+      transition: opacity 0.15s, color 0.15s;
+    }
+
+    .label-row:hover .label-delete { opacity: 1; }
+    .label-delete:hover { color: var(--danger); }
+
+    /* ── Main ────────────────────────────────────────────── */
+    .main-content {
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      background: #E5E2DA;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      flex: 1;
+      min-height: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .canvas-placeholder {
+      text-align: center;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .canvas-placeholder svg { opacity: 0.35; margin-bottom: 10px; }
+    .canvas-placeholder p { font-size: 13px; }
+
+    #mainCanvas {
+      display: none;
+      width: 100%;
+      cursor: crosshair;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* Download bar */
+    .download-bar {
+      display: none;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.2px;
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+      color: white;
+    }
+
+    /* ── Modals ──────────────────────────────────────────── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(20,19,17,0.45);
+      backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s;
+    }
+
+    .overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 30px;
+      width: 380px;
+      max-width: 92vw;
+      transform: translateY(10px);
+      transition: transform 0.18s;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+
+    .overlay.open .modal { transform: translateY(0); }
+
+    .modal h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 22px;
+    }
+
+    .form-group { margin-bottom: 14px; }
+
+    .form-group > label {
+      display: block;
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"] {
+      width: 100%;
+      padding: 8px 11px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .form-group input:focus { border-color: var(--accent); }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .form-group input[type="color"] {
+      width: 100%;
+      height: 38px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 3px;
+      cursor: pointer;
+      background: var(--bg);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Footer ──────────────────────────────────────────── */
+    footer {
+      padding: 14px 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    #fileInput { display: none; }
+  </style>
+</head>
+<body>
+
+<input type="file" id="fileInput" accept="image/*">
+
+<!-- Header -->
+<header>
+  <h1>Quadrat</h1>
+  <span class="subtitle">An interactive frame for environmental research</span>
+</header>
+
+<!-- App -->
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <button class="step-btn" id="loadImageBtn">
+      <span class="step-num">1</span> Load Image
+    </button>
+    <button class="step-btn" id="openGridModal">
+      <span class="step-num">2</span> Generate Grid
+    </button>
+    <button class="step-btn" id="openLabelModal">
+      <span class="step-num">3</span> Add Label
+    </button>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-label">Mode</div>
+    <div class="radio-group">
+      <div class="radio-option">
+        <input type="radio" name="mode" id="modeHighlight" value="highlight" checked>
+        <label for="modeHighlight">Highlight</label>
       </div>
-
-      <!-- Main tool area -->
-      <div class="row" style="margin-top: 40px;">
-
-        <!-- Left control panel -->
-        <div class="col s3">
-
-          <label class="btn-flat col s12 m12 white" id="uploadImageBtn" style="margin-bottom: 10px; padding:0px; color: black; font-weight:bolder;"><span class="bullet">1.</span>Load Image</label>
-          <label class="btn-flat col s12 m12 white modal-trigger" id="createGridBtn" href="#modal-create-grid" style="margin-bottom:10px;padding:0px; color: black; font-weight:bolder;"><span class="bullet">2.</span>Generate Grid</label>
-          <label class="btn-flat col s12 m12 white modal-trigger" id="createLabelBtn" href="#modal-create-label" style="margin-bottom:10px;padding:0px; color: black; font-weight:bolder;"><span class="bullet">3.</span>Add Label</label>
-
-          <!-- Mode selection -->
-          <div style=" margin-top: 80px !important">
-            <label style="padding-right: 25px;">
-              <input class="with-gap radio-blue-grey" name="modeControls" id="highlightGrid" value="highlightGrid" type="radio" checked />
-              <span style="padding-left: 25px;">Highlight</span>
-            </label>
-            <label>
-              <input class="with-gap" name="modeControls" id="eraseGrid"  value="eraseGrid" type="radio" />
-              <span style="padding-left: 25px;">Erase</span>
-            </label>
-          </div>
-
-
-          <!-- User defined labels-->
-          <table class="col s12 m12 l12" id="table-labels" style="display: none; margin-top: 50px;">
-            <colgroup>
-              <col span="1" style="width: 5%;">
-              <col span="1" style="width: 40%;">
-              <col span="1" style="width: 40%;">
-              <col span="1" style="width: 15%;">
-            </colgroup>
-
-            <thead width='100%'>
-              <tr>
-                  <th class="left-align"></th>
-                  <th class="left-align">Label</th>
-                  <th class="center-align">Cover <span class="hide-on-small-only">%</span></th>
-                  <th></th>
-              </tr>
-            </thead>
-            <tbody>
-            </tbody>
-          </table>
-
-        </div>
-
-        <!-- Right image panel -->
-        <div class="col s9">
-          <div id="canvas" oncontextmenu="return false;"></div>
-
-          <div class="col m12 right-align" id="downloadControls" style="margin-top: 10px; display: none;">
-            <a class="btn col s12 m2 offset-m6 white" id="downloadImageBtn" style="margin-bottom: 10px; padding:0px; color: black; font-weight:bolder;">Canvas</a>
-            <a class="btn col s12 m2 white" id="downloadTableBtn" style="margin-bottom: 10px; padding:0px; color: black; font-weight:bolder;">Table</a>
-            <a class="btn col s12 m2 white" id="downloadJSONBtn" style="margin-bottom: 10px; padding:0px; color: black; font-weight:bolder;">JSON</a>  
-          </div>
-        </div>
+      <div class="radio-option">
+        <input type="radio" name="mode" id="modeErase" value="erase">
+        <label for="modeErase">Erase</label>
       </div>
     </div>
 
-    <hr style="width: 75%; margin-top: 50px;">
-    <footer style="margin-bottom: 10px;">
-      <div class="footer-copyright">
-        <div class="container">
-        © 2020 Copyright Andres Patrignani
-        <a class="right" style="color: #651fff" href="https://github.com/andres-patrignani/quadrat" target="_blank">Github</a>
-        </div>
-      </div>
-    </footer>
+    <div class="sidebar-divider"></div>
 
-    <!-- Modal Grid -->
-    <div id="modal-create-grid" class="modal col s6 m6">
-      <div class="modal-content container">
+    <div class="sidebar-label">Labels</div>
+    <div id="labelsList"><span class="labels-empty">No labels yet</span></div>
 
-        <h4>Create new grid</h4>
-        <table id="table-create-grid">
-          <colgroup>
-            <col span="1" style="width: 50%;">
-            <col span="1" style="width: 50%;">
-          </colgroup>
-          <tr>
-            <td style="padding-right: 15px !important;">
-              <label>Rows</label>
-              <input value="10" id="gridRows" type="number" min="3" max="25" onkeydown="return false">
-            </td>
-            <td style="padding-left: 15px !important;">
-              <label>Columns</label>
-              <input value="10" id="gridColumns" type="number" min="3" max="25" onkeydown="return false">
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2">
-              <label>Quadrat description</label>
-              <input id="quadratDescription" type="text">
-            </td>
-          </tr>
-        </table>
-      
+  </aside>
+
+  <!-- Main canvas area -->
+  <main class="main-content">
+    <div class="canvas-wrap" id="canvasWrap">
+      <div class="canvas-placeholder" id="placeholder">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <rect x="2" y="2" width="20" height="20" rx="2"/>
+          <line x1="2" y1="8" x2="22" y2="8"/>
+          <line x1="2" y1="14" x2="22" y2="14"/>
+          <line x1="8" y1="2" x2="8" y2="22"/>
+          <line x1="14" y1="2" x2="14" y2="22"/>
+        </svg>
+        <p>Load an image to get started</p>
       </div>
-      <div class="modal-footer">
-        <a class="modal-close btn green darken-6 col s6" id="addGridBtn">Create grid</a>
-      </div>
+      <canvas id="mainCanvas" oncontextmenu="return false;"></canvas>
     </div>
 
-      <!-- Modal Labels -->
-      <div id="modal-create-label" class="modal col s6 m6">
-        <div class="modal-content container">
+    <div class="download-bar" id="downloadBar">
+      <button class="btn" id="dlCanvas">↓ Canvas</button>
+      <button class="btn" id="dlCSV">↓ CSV</button>
+      <button class="btn" id="dlJSON">↓ JSON</button>
+    </div>
+  </main>
+</div>
 
-          <h4>Create new label</h4>
+<!-- Footer -->
+<footer>
+  <span>© 2024 Andres Patrignani</span>
+  <a href="https://github.com/andres-patrignani/quadrat" target="_blank">GitHub ↗</a>
+</footer>
 
-          <table id="table-create-label">
-            <colgroup>
-              <col span="1" style="width: 80%;">
-              <col span="1" style="width: 20%;">
-           </colgroup>
-            <tr>
-              <td style="padding-right: 10px;">
-                <label>Label name</label>
-                <input placeholder="Dandelions" id="labelName" type="text" maxlength="12" required>
-              </td>
-              <td>
-                <label>Label color</label>
-                <input type="color" value="#ff3d00" id="labelColor" style="width: 100%; height: 50px">
-              </td>
-            </tr>
-            <tr>
-              <td colspan="2">
-                <label>Label description</label>
-                <input id="labelDescription" type="text">
-              </td>
-            </tr>
-          </table>
-        </div>
-        <div class="modal-footer">
-          <a class="modal-close btn green darken-6 col s6" id="addLabelBtn">Add label</a>
-        </div>
+<!-- Grid Modal -->
+<div class="overlay" id="gridOverlay">
+  <div class="modal">
+    <h2>Generate Grid</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Rows</label>
+        <input type="number" id="gridRows" value="10" min="2" max="50">
       </div>
-     
+      <div class="form-group">
+        <label>Columns</label>
+        <input type="number" id="gridCols" value="10" min="2" max="50">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Description (optional)</label>
+      <input type="text" id="gridDesc" placeholder="e.g. Plot A — Site 1">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="closeGridModal">Cancel</button>
+      <button class="btn btn-primary" id="confirmGrid">Create Grid</button>
+    </div>
+  </div>
+</div>
 
-  <script src="public/js/materialize.min.js"></script>
-  <script src="public/js/quadrat.js"></script>
-  <script>  
+<!-- Label Modal -->
+<div class="overlay" id="labelOverlay">
+  <div class="modal">
+    <h2>Add Label</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="labelName" placeholder="e.g. Dandelions" maxlength="20">
+      </div>
+      <div class="form-group">
+        <label>Color</label>
+        <input type="color" id="labelColor" value="#ff3d00">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Description (optional)</label>
+      <input type="text" id="labelDesc" placeholder="">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="closeLabelModal">Cancel</button>
+      <button class="btn btn-primary" id="confirmLabel">Add Label</button>
+    </div>
+  </div>
+</div>
 
-    //Sidenav
-    document.addEventListener('DOMContentLoaded', function() {
-      var elems = document.querySelectorAll('.sidenav');
-      var instances = M.Sidenav.init(elems, {'edge':'right'});
-    });
+<script>
+  /* ─── State ────────────────────────────────────────────── */
+  let loadedImg    = null;
+  let filename     = '';
+  let isPainting   = false;
+  let activeName   = null;
+  let activeColor  = null;
 
-    document.addEventListener('DOMContentLoaded', function() {
-      var elems = document.querySelectorAll('select');
-      var instances = M.FormSelect.init(elems);
-    });
+  let quadrat = { description: '', rows: 0, columns: 0, grid: [] };
+  let labels  = {};   // { name: { color, count, percentage, description } }
 
-    document.addEventListener('DOMContentLoaded', function() {
-      var elems = document.querySelectorAll('.modal');
-      var instances = M.Modal.init(elems);
-    });
+  /* ─── DOM refs ─────────────────────────────────────────── */
+  const canvas      = document.getElementById('mainCanvas');
+  const ctx         = canvas.getContext('2d');
+  const canvasWrap  = document.getElementById('canvasWrap');
+  const placeholder = document.getElementById('placeholder');
+  const labelsList  = document.getElementById('labelsList');
+  const downloadBar = document.getElementById('downloadBar');
 
-  </script>
+  /* ─── Helpers ──────────────────────────────────────────── */
+  function hexToRgba(hex, a) {
+    const r = parseInt(hex.slice(1,3), 16);
+    const g = parseInt(hex.slice(3,5), 16);
+    const b = parseInt(hex.slice(5,7), 16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
 
-  </body>
+  function getMode() {
+    return document.querySelector('input[name="mode"]:checked').value;
+  }
+
+  function baseName() {
+    return filename ? filename.replace(/\.[^.]+$/, '') : 'quadrat';
+  }
+
+  /* ─── Canvas rendering ─────────────────────────────────── */
+  function redraw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (loadedImg) {
+      ctx.drawImage(loadedImg, 0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.fillStyle = '#DDD9CE';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Colored cells
+    for (const cell of quadrat.grid) {
+      if (cell.label && cell.color) {
+        ctx.fillStyle = cell.color;
+        ctx.fillRect(cell.x, cell.y, cell.w, cell.h);
+      }
+    }
+
+    // Grid lines
+    if (quadrat.grid.length > 0) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+      ctx.lineWidth = 1;
+      for (const cell of quadrat.grid) {
+        ctx.strokeRect(cell.x + 0.5, cell.y + 0.5, cell.w - 1, cell.h - 1);
+      }
+    }
+  }
+
+  /* ─── Image loading ────────────────────────────────────── */
+  document.getElementById('loadImageBtn').addEventListener('click', () => {
+    document.getElementById('fileInput').click();
+  });
+
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    filename = file.name;
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = function() {
+      loadedImg = image;
+      fitCanvas();
+      showCanvas();
+      // Reset grid on new image load
+      quadrat.grid = [];
+      quadrat.rows = quadrat.columns = 0;
+      resetLabelCounts();
+      redraw();
+    };
+    image.src = url;
+    // allow re-uploading same file
+    e.target.value = '';
+  });
+
+  function fitCanvas() {
+    const w = canvasWrap.clientWidth;
+    const h = loadedImg
+      ? Math.round(loadedImg.naturalHeight * (w / loadedImg.naturalWidth))
+      : 420;
+    canvas.width  = w;
+    canvas.height = h;
+  }
+
+  function showCanvas() {
+    canvas.style.display = 'block';
+    placeholder.style.display = 'none';
+    downloadBar.style.display = 'flex';
+  }
+
+  /* ─── Grid ─────────────────────────────────────────────── */
+  function buildGrid(rows, cols) {
+    const cw = canvas.width  / cols;
+    const ch = canvas.height / rows;
+    const grid = [];
+    for (let c = 0; c < cols; c++) {
+      for (let r = 0; r < rows; r++) {
+        grid.push({ x: c * cw, y: r * ch, w: cw, h: ch, label: null, color: null });
+      }
+    }
+    return grid;
+  }
+
+  document.getElementById('openGridModal').addEventListener('click', () => openOverlay('gridOverlay'));
+  document.getElementById('closeGridModal').addEventListener('click', () => closeOverlay('gridOverlay'));
+
+  document.getElementById('confirmGrid').addEventListener('click', function() {
+    const rows = Math.max(2, Math.min(50, parseInt(document.getElementById('gridRows').value) || 10));
+    const cols = Math.max(2, Math.min(50, parseInt(document.getElementById('gridCols').value) || 10));
+    const desc = document.getElementById('gridDesc').value.trim();
+
+    if (quadrat.grid.length > 0) {
+      if (!confirm('This will clear the existing grid and all annotations. Continue?')) return;
+      resetLabelCounts();
+    }
+
+    // If no image yet, create a blank canvas
+    if (!loadedImg) {
+      canvas.width  = canvasWrap.clientWidth;
+      canvas.height = 420;
+      showCanvas();
+    }
+
+    quadrat.grid        = buildGrid(rows, cols);
+    quadrat.rows        = rows;
+    quadrat.columns     = cols;
+    quadrat.description = desc;
+
+    redraw();
+    closeOverlay('gridOverlay');
+  });
+
+  /* ─── Labels ───────────────────────────────────────────── */
+  document.getElementById('openLabelModal').addEventListener('click', () => {
+    document.getElementById('labelName').value = '';
+    document.getElementById('labelDesc').value = '';
+    openOverlay('labelOverlay');
+    setTimeout(() => document.getElementById('labelName').focus(), 80);
+  });
+
+  document.getElementById('closeLabelModal').addEventListener('click', () => closeOverlay('labelOverlay'));
+
+  document.getElementById('confirmLabel').addEventListener('click', function() {
+    let name = document.getElementById('labelName').value.trim();
+    if (!name) name = 'Label_' + (Object.keys(labels).length + 1);
+    const color = document.getElementById('labelColor').value;
+    const desc  = document.getElementById('labelDesc').value.trim();
+
+    labels[name] = { color, count: 0, percentage: 0, description: desc };
+    activeName  = name;
+    activeColor = color;
+
+    // Auto-switch to highlight mode
+    document.getElementById('modeHighlight').checked = true;
+
+    renderLabelsList();
+    downloadBar.style.display = 'flex';
+    closeOverlay('labelOverlay');
+  });
+
+  function selectLabel(name) {
+    activeName  = name;
+    activeColor = labels[name].color;
+    document.getElementById('modeHighlight').checked = true;
+    renderLabelsList();
+  }
+
+  function removeLabel(name) {
+    const typed = prompt(`Type "${name}" to confirm deletion:`);
+    if (typed !== name) return;
+
+    delete labels[name];
+
+    for (const cell of quadrat.grid) {
+      if (cell.label === name) { cell.label = null; cell.color = null; }
+    }
+
+    if (activeName === name) { activeName = null; activeColor = null; }
+
+    redraw();
+    renderLabelsList();
+  }
+
+  function renderLabelsList() {
+    if (Object.keys(labels).length === 0) {
+      labelsList.innerHTML = '<span class="labels-empty">No labels yet</span>';
+      return;
+    }
+    labelsList.innerHTML = '';
+    for (const [name, data] of Object.entries(labels)) {
+      const row = document.createElement('div');
+      row.className = 'label-row' + (name === activeName ? ' active' : '');
+      row.id = 'lrow-' + name;
+      row.innerHTML = `
+        <span class="label-dot" style="background:${data.color}"></span>
+        <span class="label-name">${name}</span>
+        <span class="label-pct" id="lpct-${name}">${data.percentage}%</span>
+        <button class="label-delete" title="Remove" data-name="${name}">×</button>
+      `;
+      row.addEventListener('click', function(e) {
+        if (e.target.classList.contains('label-delete')) return;
+        selectLabel(name);
+      });
+      row.querySelector('.label-delete').addEventListener('click', function(e) {
+        e.stopPropagation();
+        removeLabel(name);
+      });
+      labelsList.appendChild(row);
+    }
+  }
+
+  function resetLabelCounts() {
+    for (const k of Object.keys(labels)) {
+      labels[k].count = 0;
+      labels[k].percentage = 0;
+    }
+    renderLabelsList();
+  }
+
+  function updateCoverage() {
+    const total = quadrat.grid.length;
+    if (!total) return;
+    for (const name of Object.keys(labels)) {
+      const count = quadrat.grid.filter(c => c.label === name).length;
+      const pct   = Math.round(count / total * 1000) / 10;
+      labels[name].count      = count;
+      labels[name].percentage = pct;
+      const el = document.getElementById('lpct-' + name);
+      if (el) el.textContent = pct + '%';
+    }
+  }
+
+  /* ─── Painting ─────────────────────────────────────────── */
+  function canvasPoint(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (clientX - rect.left) * (canvas.width  / rect.width),
+      y: (clientY - rect.top)  * (canvas.height / rect.height)
+    };
+  }
+
+  function paintAt(clientX, clientY) {
+    if (!quadrat.grid.length) return;
+    const mode = getMode();
+    if (mode === 'highlight' && !activeName) return;
+
+    const { x, y } = canvasPoint(clientX, clientY);
+    const cell = quadrat.grid.find(c => x >= c.x && x < c.x + c.w && y >= c.y && y < c.y + c.h);
+    if (!cell) return;
+
+    let changed = false;
+    if (mode === 'highlight' && cell.label !== activeName) {
+      cell.label = activeName;
+      cell.color = hexToRgba(activeColor, 0.5);
+      changed = true;
+    } else if (mode === 'erase' && cell.label !== null) {
+      cell.label = null;
+      cell.color = null;
+      changed = true;
+    }
+
+    if (changed) { redraw(); updateCoverage(); }
+  }
+
+  // Mouse
+  canvas.addEventListener('mousedown',  e => { e.preventDefault(); isPainting = true;  paintAt(e.clientX, e.clientY); });
+  canvas.addEventListener('mousemove',  e => { if (isPainting) paintAt(e.clientX, e.clientY); });
+  window.addEventListener('mouseup',    () => { isPainting = false; });
+
+  // Touch
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); isPainting = true;  const t = e.touches[0]; paintAt(t.clientX, t.clientY); }, { passive: false });
+  canvas.addEventListener('touchmove',  e => { e.preventDefault(); if (isPainting) { const t = e.touches[0]; paintAt(t.clientX, t.clientY); } }, { passive: false });
+  canvas.addEventListener('touchend',   () => { isPainting = false; });
+
+  /* ─── Downloads ────────────────────────────────────────── */
+  function downloadBlob(blob, name) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  document.getElementById('dlCanvas').addEventListener('click', () => {
+    canvas.toBlob(blob => downloadBlob(blob, baseName() + '_quadrat.png'));
+  });
+
+  document.getElementById('dlCSV').addEventListener('click', () => {
+    let csv = 'CELL,LABEL,COLOR\n';
+    quadrat.grid.forEach((c, i) => { csv += `${i+1},${c.label||''},${c.color||''}\n`; });
+    downloadBlob(new Blob([csv], { type: 'text/csv' }), baseName() + '_table.csv');
+  });
+
+  document.getElementById('dlJSON').addEventListener('click', () => {
+    downloadBlob(
+      new Blob([JSON.stringify({ labels, quadrat }, null, 2)], { type: 'application/json' }),
+      baseName() + '_data.json'
+    );
+  });
+
+  /* ─── Modals ───────────────────────────────────────────── */
+  function openOverlay(id)  { document.getElementById(id).classList.add('open');    }
+  function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
+
+  document.querySelectorAll('.overlay').forEach(el => {
+    el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(el => el.classList.remove('open'));
+  });
+
+  // Allow Enter to submit modals
+  document.getElementById('gridDesc').addEventListener('keydown',  e => { if (e.key === 'Enter') document.getElementById('confirmGrid').click(); });
+  document.getElementById('labelName').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('confirmLabel').click(); });
+  document.getElementById('labelDesc').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('confirmLabel').click(); });
+</script>
+
+</body>
 </html>
