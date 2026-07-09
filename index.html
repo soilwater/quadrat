@@ -157,6 +157,7 @@
   .text-btn {
     font-family: inherit;
     font-size: 11.5px; font-weight: 500;
+    line-height: 1.3;
     padding: 3px 7px;
     border: 1px solid var(--border);
     background: var(--surface);
@@ -164,6 +165,7 @@
     cursor: pointer;
     color: var(--text);
     transition: all .15s;
+    white-space: nowrap;     /* never break between the arrow and its label */
   }
   .text-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
 
@@ -215,7 +217,8 @@
   /* ---- Labels panel ---- */
   .labels-panel { display: flex; flex-direction: column; }
   .labels-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-  .label-action-btns { display: flex; gap: 6px; }
+  .labels-toolbar .panel-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .label-action-btns { display: flex; gap: 6px; flex-shrink: 0; }
 
   #labelsList {
     max-height: clamp(140px, 24vh, 280px);
@@ -295,7 +298,7 @@
   .lock-label input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
 
   /* ---- Image nav ---- */
-  .img-nav { display: none; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .img-nav { display: none; align-items: center; gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
   .img-title { flex: 1; font-size: 13.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .img-counter { font-size: 12.5px; color: var(--muted); flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .remove-img-btn {
@@ -308,6 +311,7 @@
   /* ---- Canvas ---- */
   .canvas-wrap {
     position: relative;
+    flex: 1;                 /* fill the height the sidebar sets on the grid row */
     background: #E5E2DA;
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -321,7 +325,7 @@
   #mainCanvas { display: none; max-width: 100%; cursor: crosshair; user-select: none; -webkit-user-drag: none; touch-action: none; }
 
   /* ---- Thumbnails ---- */
-  .nav-strip-row { display: none; align-items: center; gap: 8px; margin-top: 8px; }
+  .nav-strip-row { display: none; align-items: center; gap: 8px; margin-top: 8px; flex-shrink: 0; }
   .nav-btn {
     width: 28px; height: 28px;
     border: 1px solid var(--border);
